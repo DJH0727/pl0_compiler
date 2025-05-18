@@ -1,0 +1,9 @@
+# ninja log v6
+16	86	7692809827981100	CMakeFiles/pl0_compiler.dir/src/codegen.cpp.obj	b907f787607e43a6
+11	88	7692809827939924	CMakeFiles/pl0_compiler.dir/src/parser.cpp.obj	11a58a15cceac4ba
+20	92	7692809828026583	CMakeFiles/pl0_compiler.dir/src/vm.cpp.obj	3f4ab60fcc8c6a2f
+30	98	7692809828134903	CMakeFiles/pl0_compiler.dir/src/symbol_table.cpp.obj	5400113cdd53e0cb
+34	578	7692809828170322	CMakeFiles/pl0_compiler.dir/src/common.cpp.obj	9580734ba5b36dc2
+7	604	7692809827898345	CMakeFiles/pl0_compiler.dir/src/lexer.cpp.obj	3ed370d1947405bc
+1	1616	7692809827844976	CMakeFiles/pl0_compiler.dir/src/main.cpp.obj	f5826611397ed25d
+1618	1733	7692809844006874	pl0_compiler.exe	b254068de5c80cf8
