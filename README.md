@@ -24,3 +24,5 @@ pl0-compiler/
 ├── CMakeLists.txt           
 └── README.md
 ```
+
+Clion中设置工作目录为该项目根目录。
