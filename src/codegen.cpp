@@ -23,12 +23,31 @@ void emit(const fct f, const int l, const int a) {
 
 // 打印所有指令（方便调试）
 void printListCode() {
+    printf("\nList of instructions:\n");
+    printf("Idx  FCT  L   A\n");
+    printf("--- ---- --- ---\n");
+
     for (int i = 0; i < codeIndex; i++) {
-        std::cout << i << ": ";
-        std::cout << getFctName(code[i].f) << " ";
-        std::cout << code[i].l << " ";
-        std::cout << code[i].a << std::endl;
+        printf("%-3d %-4s %3d %3d\n",
+            i,
+            getFctName(code[i].f).c_str(),
+            code[i].l,
+            code[i].a);
     }
+}
+void print_code_to_file(FILE *file) {
+    fprintf(file, "List of instructions:\n");
+    fprintf(file, "Idx  FCT  L   A\n");
+    fprintf(file, "--- ---- --- ---\n");
+
+    for (int i = 0; i < codeIndex; i++) {
+        fprintf(file, "%-3d %-4s %3d %3d\n",
+            i,
+            getFctName(code[i].f).c_str(),
+            code[i].l,
+            code[i].a);
+    }
+
 }
 std::string getFctName(fct f) {
     switch (f) {

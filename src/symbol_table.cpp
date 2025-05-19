@@ -8,6 +8,19 @@
 #include "common.h"
 Symbol symbolTable[SYMBOL_TABLE_SIZE];
 int symbol_count;
+
+std::string get_symbol_kind_string(const SymbolKind kind) {
+    switch (kind) {
+        case OBJ_CONST:
+            return "CONST";
+        case OBJ_VAR:
+            return "VAR";
+        case OBJ_PROC:
+            return "PROC";
+    }
+    return "UNKNOWN";
+}
+
 // 初始化符号表
 void init_symbol_table() {
     symbol_count = 0;
@@ -69,10 +82,36 @@ Symbol* get_symbol(const int index) {
 // 打印符号表
 void print_symbol_table() {
     printf("Symbol Table:\n");
+    printf("Idx  Name       Kind     Val   Lev  Addr  Size\n");
+    printf("---- ---------- -------- ----- ---- ----- -----\n");
+
     for (int i = 0; i < symbol_count; i++) {
         Symbol* s = &symbolTable[i];
-        printf("[%d] name=%s kind=%d val=%d level=%d addr=%d size=%d\n",
-            i, s->name, s->kind, s->val, s->level, s->address, s->size);
+        printf("[%-2d] %-10s %-8s %-5d %-4d %-5d %-5d\n",
+            i,
+            s->name,
+            get_symbol_kind_string(s->kind).c_str(),
+            s->val,
+            s->level,
+            s->address,
+            s->size);
+    }
+}
+void print_symbol_table_to_file(FILE* file) {
+    fprintf(file, "Symbol Table:\n");
+    fprintf(file, "Idx  Name       Kind     Val   Lev  Addr  Size\n");
+    fprintf(file, "---- ---------- -------- ----- ---- ----- -----\n");
+
+    for (int i = 0; i < symbol_count; i++) {
+        Symbol* s = &symbolTable[i];
+        fprintf(file, "[%-2d] %-10s %-8s %-5d %-4d %-5d %-5d\n",
+            i,
+            s->name,
+            get_symbol_kind_string(s->kind).c_str(),
+            s->val,
+            s->level,
+            s->address,
+            s->size);
     }
 }
 // 统计指定层级的变量数量

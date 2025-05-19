@@ -27,7 +27,7 @@ extern Symbol symbolTable[SYMBOL_TABLE_SIZE];
 extern int symbol_count;
 
 
-// 初始化符号表
+std::string get_symbol_kind_string(SymbolKind kind);
 void init_symbol_table();
 // 符号表操作
 int enter_symbol(SymbolKind kind, const char* name, int val, int level, int address, int size);
@@ -39,6 +39,7 @@ void remove_symbols_at_level(int level);
 Symbol* get_symbol(int index);
 // 打印符号表
 void print_symbol_table();
+void print_symbol_table_to_file(FILE* file);
 int lookup_symbol_current_level(const char* name,  int current_level) ;
 int count_variables(int level);
 #endif //SYMBOL_TABLE_H

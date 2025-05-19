@@ -11,9 +11,12 @@
 #include "lexer.h"
 
 int currentLevel = 0;  // 当前嵌套层级
+int varCount[MAX_NESTING_LEVEL] = {0, 0, 0};      // 当前层级变量数量
+bool isNewProc = false;  // 是否是新过程
 
 void parse_program() {
     parse_block();
+
 
     if (currentToken.type != period) {
         //程序必须以句点结束
@@ -26,6 +29,7 @@ void parse_program() {
 
 void parse_block() {
 
+    varCount[currentLevel] = 0; // 变量计数归零
     const int index = codeIndex; // 记录当前代码段的返回地址
     emit(JMP, 0, 0); // 进入程序，生成入口代码
 
@@ -41,7 +45,8 @@ void parse_block() {
 
     code[index].a = codeIndex;
     // 回填代码段大小
-    emit(INT_, 0, 0);
+    emit(INT_, 0, varCount[currentLevel]+3);
+
     parse_stmt();
     emit(OPR, 0, 0);// 释放数据段
 
@@ -131,6 +136,9 @@ void parse_var_decl() {
         // 将变量插入符号表，val 和 size 对于变量不需要设置
         enter_symbol(OBJ_VAR, currentToken.lexeme.c_str(), 0, currentLevel, address++, 0);
 
+        varCount[currentLevel]++; // 变量计数
+        //std::cout << "varCount: " << varCount[currentLevel] << std::endl;
+
         getNextToken(); // 消费 ident
 
         if (currentToken.type == comma) {
@@ -186,9 +194,12 @@ void parse_proc_decl() {
         symbol->address = codeIndex + 1; // 记录过程起始地址,当前是jmp指令，指向下一条指令int，指向这条也行？
 
         currentLevel++;                // 进入下一层
+
         parse_block();                 // 递归处理过程体 block
+
+
         // 回填该过程所需的局部变量空间大小
-        symbol->size = count_variables(currentLevel);
+        symbol->size = varCount[currentLevel]+3;// 3 是 SL, DL, RA 的大小
         currentLevel--;                // 返回上一层
 
         if (currentToken.type != semicolon) {
@@ -220,9 +231,9 @@ void parse_stmt() {
                 error(ERR_NOT_VARIABLE, currentToken.line, currentToken.column);
                 return;
             }
-            int varLevel = sym->level;
-            int levelDiff = currentLevel - varLevel;
-            int addr = sym->address;
+            const int varLevel = sym->level;
+            const int levelDiff = currentLevel - varLevel;
+            const int addr = sym->address;
 
             getNextToken(); // 消费 ident
 
@@ -235,7 +246,6 @@ void parse_stmt() {
 
             parse_expression(); // 解析表达式
 
-            // TODO: 生成赋值语句的 p-code
             //生成赋值语句的 p-code：将栈顶内容存到变量地址中
             emit(STO, levelDiff, addr);
             break;
@@ -259,7 +269,6 @@ void parse_stmt() {
 
             getNextToken(); // 消费 ident
 
-            // TODO: 生成调用过程的 p-code
             // 生成调用过程的 p-code
             const Symbol* procSymbol = get_symbol(index);
             emit(CAL_, currentLevel - procSymbol->level, procSymbol->address);
@@ -297,14 +306,11 @@ void parse_stmt() {
             }
 
             getNextToken(); // 消费 then
-            // TODO: 记录当前 codeIndex，用于回填 JPC 跳转地址
             // 记录当前 codeIndex，用于回填 JPC 跳转地址
-            int jpcIndex = codeIndex;
-            // TODO: 生成 JPC 指令
+            const int jpcIndex = codeIndex;
             // 生成 JPC 指令，暂时跳转地址为 0，稍后回填
             emit(JPC, 0, 0);
             parse_stmt();
-            // TODO: 回填 JPC 跳转地址
             // 回填 JPC 跳转地址为当前 codeIndex（语句执行完跳转位置）
             code[jpcIndex].a = codeIndex;
             break;
@@ -312,8 +318,7 @@ void parse_stmt() {
         case whilesym: {
             // while Cond do Stmt
             getNextToken(); // 消费 while
-            // TODO: 记录循环开始 codeIndex
-            int loopStartIndex = codeIndex;
+            const int loopStartIndex = codeIndex;
             parse_condition();
 
             if (currentToken.type != dosym) {
@@ -323,16 +328,13 @@ void parse_stmt() {
 
             getNextToken(); // 消费 do
 
-            // TODO: 记录 JPC 的位置
-            int jpcIndex = codeIndex;
-            // TODO: 生成 JPC 指令
+
+            const int jpcIndex = codeIndex;
             emit(JPC, 0, 0);
 
             parse_stmt();
 
-            // TODO: 生成 JMP 回到循环开始
             emit(JMP, 0, loopStartIndex);
-            // TODO: 回填 JPC 跳转地址
             code[jpcIndex].a = codeIndex;
             break;
         }
@@ -348,7 +350,6 @@ void parse_condition() {
         getNextToken(); // 消费 'odd'
         parse_expression();    // 解析表达式
 
-        // TODO: 生成 p-code: OPR 6 表示 odd
         emit(OPR, 0, 6);
     } else {
         // Exp RelOp Exp
@@ -372,7 +373,6 @@ void parse_condition() {
 
         parse_expression(); // 右边表达式
 
-        //TODO: 生成 p-code：对应的关系运算符
         emit(OPR, 0, relOpCode);
     }
 }
@@ -390,7 +390,6 @@ void parse_expression() {
 
     // 如果前面是负号，执行取负操作
     if (op == minus) {
-        //TODO: 生成取负操作的 p-code
         emit(OPR, 0, 1);
     }
 
@@ -402,10 +401,8 @@ void parse_expression() {
         parse_term();
 
         if (op == plus) {
-            //TODO: 生成加法操作的 p-code
             emit(OPR, 0, 2);// 加法
         } else {
-            //TODO: 生成减法操作的 p-code
             emit(OPR, 0, 3);
         }
     }
@@ -417,16 +414,14 @@ void parse_term() {
     parse_factor(); // 首先解析一个因子
 
     while (currentToken.type == times || currentToken.type == slash) {
-        PL0TokenType op = currentToken.type;
+        const PL0TokenType op = currentToken.type;
         getNextToken(); // 消费 '*' 或 '/'
 
         parse_factor(); // 右边的因子
 
         if (op == times) {
-            //TODO: 生成乘法操作的 p-code
             emit(OPR, 0, 4);
         } else {
-            //TODO: 生成除法操作的 p-code
             emit(OPR, 0, 5);
         }
     }
@@ -442,12 +437,10 @@ void parse_factor() {
             return;
         }
 
-        Symbol* sym = get_symbol(index);
+        const Symbol* sym = get_symbol(index);
         if (sym->kind == OBJ_CONST) {
-            //TODO: 加载常量的 p-code
             emit(LIT, 0, sym->val);
         } else if (sym->kind == OBJ_VAR) {
-            //TODO: 加载变量的 p-code
             emit(LOD, currentLevel - sym->level, sym->address);
 
         } else {
@@ -457,7 +450,6 @@ void parse_factor() {
         getNextToken(); // 消费标识符
     }
     else if (currentToken.type == number) {
-        //TODO: 加载数字面量的 p-code
         emit(LIT, 0, strToInt(currentToken.lexeme));
         getNextToken(); // 消费 number
     }

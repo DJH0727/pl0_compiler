@@ -28,6 +28,7 @@ struct Instruction {
 // 指令生成接口
 void emit(fct f, int l, int a);  // 添加一条指令
 void printListCode();                 // 打印所有指令
+void print_code_to_file(FILE *file) ;
 extern Instruction code[MAX_CODE_SIZE];      // 指令数组
 extern int codeIndex;           // 当前指令计数
 #endif //CODEGEN_H
