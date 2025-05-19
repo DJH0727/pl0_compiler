@@ -31,16 +31,7 @@ int main() {
         return 1;
     }
     initLexer(code);
-#ifdef DEBUG
-    while (true) {
-        getNextToken();
-        std::cout<<currentToken.toString()<< std::endl;
-        if (currentToken.type == PL0TokenType::period)break;
-    }
-#endif
-
-
-   getNextToken();
+    getNextToken();
     parse_program();
     print_symbol_table();
     printListCode();

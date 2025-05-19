@@ -27,9 +27,7 @@ void getch() {
         ch = '\0';  // 到达字符串结尾
         return;
     }
-
     ch = source[pos++];
-    //std::cout<<"currentChar: "<<ch<<std::endl;
     if (ch == '\n') {
         line++;
         column = 0;
