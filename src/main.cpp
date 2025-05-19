@@ -1,7 +1,8 @@
 //
 // Created by 27249 on 25-5-18.
 //
-
+//#define DEBUG 1
+#include <codegen.h>
 #include <windows.h>
 #include <iostream>
 #include <parser.h>
@@ -27,11 +28,20 @@ int main() {
         std::cout << "Failed to read input file." << std::endl;
         return 1;
     }
-
     initLexer(code);
-    getNextToken();
+#ifdef DEBUG
+    while (true) {
+        getNextToken();
+        std::cout<<currentToken.toString()<< std::endl;
+        if (currentToken.type == PL0TokenType::period)break;
+    }
+#endif
+
+
+   getNextToken();
     parse_program();
     print_symbol_table();
+    printListCode();
 
 
     free(code);

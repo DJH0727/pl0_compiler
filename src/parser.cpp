@@ -25,6 +25,10 @@ void parse_program() {
 
 
 void parse_block() {
+
+    const int index = codeIndex; // 记录当前代码段的返回地址
+    emit(JMP, 0, 0); // 进入程序，生成入口代码
+
     if (currentToken.type == constsym) {
         parse_const_decl();
     }
@@ -34,7 +38,14 @@ void parse_block() {
     while (currentToken.type == procsym) {
         parse_proc_decl();
     }
+
+    code[index].a = codeIndex;
+    // 回填代码段大小
+    emit(INT_, 0, 0);
     parse_stmt();
+    emit(OPR, 0, 0);// 释放数据段
+
+
 }
 
 
@@ -42,10 +53,6 @@ void parse_block() {
 
 
 void parse_const_decl() {
-    // 当前token必须是 constsym，否则直接返回
-    if (currentToken.type != constsym) {
-        return;
-    }
 
     getNextToken();  // 跳过const关键字
 
@@ -113,7 +120,7 @@ void parse_var_decl() {
     getNextToken(); // 消费 'var'
 
     // 变量地址初始值（局部变量在本层的偏移）
-    int address = 0;
+    int address = 3;//0 SL; 1 DL; 2 RA
 
     while (true) {
         // 标识符检查
@@ -139,7 +146,7 @@ void parse_var_decl() {
     }
 
     getNextToken(); // 消费分号
-    print_symbol_table(); // 打印符号表
+    //print_symbol_table(); // 打印符号表
 }
 
 
@@ -176,7 +183,7 @@ void parse_proc_decl() {
         // 插入过程符号（地址、val 先设为 0，稍后生成）
        int procIndex = enter_symbol(OBJ_PROC, procName, 0, currentLevel, 0, 0);
         Symbol* symbol = get_symbol(procIndex);
-        symbol->address = codeIndex; // 记录过程起始地址
+        symbol->address = codeIndex + 1; // 记录过程起始地址,当前是jmp指令，指向下一条指令int，指向这条也行？
 
         currentLevel++;                // 进入下一层
         parse_block();                 // 递归处理过程体 block
@@ -202,6 +209,21 @@ void parse_stmt() {
             char varName[MAX_IDENTIFIER_LENGTH + 1];
             strcpy(varName, currentToken.lexeme.c_str());
 
+            // 查找变量符号
+            const int symIndex = lookup_symbol(varName);
+            if (symIndex == -1) {
+                error(ERR_UNDECLARED_IDENTIFIER, currentToken.line, currentToken.column);
+                return;
+            }
+            const Symbol* sym = get_symbol(symIndex);
+            if (sym->kind != OBJ_VAR) {
+                error(ERR_NOT_VARIABLE, currentToken.line, currentToken.column);
+                return;
+            }
+            int varLevel = sym->level;
+            int levelDiff = currentLevel - varLevel;
+            int addr = sym->address;
+
             getNextToken(); // 消费 ident
 
             if (currentToken.type != becomes) { // := 符号
@@ -214,6 +236,8 @@ void parse_stmt() {
             parse_expression(); // 解析表达式
 
             // TODO: 生成赋值语句的 p-code
+            //生成赋值语句的 p-code：将栈顶内容存到变量地址中
+            emit(STO, levelDiff, addr);
             break;
         }
         case callsym: {
@@ -228,11 +252,17 @@ void parse_stmt() {
             // 过程名
             char procName[MAX_IDENTIFIER_LENGTH + 1];
             strcpy(procName, currentToken.lexeme.c_str());
+            const int index = lookup_symbol(procName);
+            if (index == -1) {
+                error(ERR_PROC_NOT_DEFINED, currentToken.line, currentToken.column);
+            }
 
             getNextToken(); // 消费 ident
 
             // TODO: 生成调用过程的 p-code
-
+            // 生成调用过程的 p-code
+            const Symbol* procSymbol = get_symbol(index);
+            emit(CAL_, currentLevel - procSymbol->level, procSymbol->address);
             break;
         }
         case beginsym: {
@@ -268,15 +298,22 @@ void parse_stmt() {
 
             getNextToken(); // 消费 then
             // TODO: 记录当前 codeIndex，用于回填 JPC 跳转地址
+            // 记录当前 codeIndex，用于回填 JPC 跳转地址
+            int jpcIndex = codeIndex;
             // TODO: 生成 JPC 指令
+            // 生成 JPC 指令，暂时跳转地址为 0，稍后回填
+            emit(JPC, 0, 0);
             parse_stmt();
             // TODO: 回填 JPC 跳转地址
+            // 回填 JPC 跳转地址为当前 codeIndex（语句执行完跳转位置）
+            code[jpcIndex].a = codeIndex;
             break;
         }
         case whilesym: {
             // while Cond do Stmt
             getNextToken(); // 消费 while
             // TODO: 记录循环开始 codeIndex
+            int loopStartIndex = codeIndex;
             parse_condition();
 
             if (currentToken.type != dosym) {
@@ -287,11 +324,16 @@ void parse_stmt() {
             getNextToken(); // 消费 do
 
             // TODO: 记录 JPC 的位置
+            int jpcIndex = codeIndex;
             // TODO: 生成 JPC 指令
+            emit(JPC, 0, 0);
+
             parse_stmt();
 
             // TODO: 生成 JMP 回到循环开始
+            emit(JMP, 0, loopStartIndex);
             // TODO: 回填 JPC 跳转地址
+            code[jpcIndex].a = codeIndex;
             break;
         }
         default:
@@ -307,7 +349,7 @@ void parse_condition() {
         parse_expression();    // 解析表达式
 
         // TODO: 生成 p-code: OPR 6 表示 odd
-        //gen(OPR, 0, 6);
+        emit(OPR, 0, 6);
     } else {
         // Exp RelOp Exp
         parse_expression(); // 左边表达式
@@ -331,7 +373,7 @@ void parse_condition() {
         parse_expression(); // 右边表达式
 
         //TODO: 生成 p-code：对应的关系运算符
-       // gen(OPR, 0, relOpCode);
+        emit(OPR, 0, relOpCode);
     }
 }
 
@@ -349,7 +391,7 @@ void parse_expression() {
     // 如果前面是负号，执行取负操作
     if (op == minus) {
         //TODO: 生成取负操作的 p-code
-        //gen(OPR, 0, 1); // OPR 0 1 表示负号
+        emit(OPR, 0, 1);
     }
 
     // 后续的 + 或 - 连接的 Term
@@ -361,10 +403,10 @@ void parse_expression() {
 
         if (op == plus) {
             //TODO: 生成加法操作的 p-code
-            //gen(OPR, 0, 2); // 加法
+            emit(OPR, 0, 2);// 加法
         } else {
             //TODO: 生成减法操作的 p-code
-            //gen(OPR, 0, 3); // 减法
+            emit(OPR, 0, 3);
         }
     }
 }
@@ -382,10 +424,10 @@ void parse_term() {
 
         if (op == times) {
             //TODO: 生成乘法操作的 p-code
-            //gen(OPR, 0, 4); // 乘法
+            emit(OPR, 0, 4);
         } else {
             //TODO: 生成除法操作的 p-code
-            //gen(OPR, 0, 5); // 除法
+            emit(OPR, 0, 5);
         }
     }
 }
@@ -403,10 +445,11 @@ void parse_factor() {
         Symbol* sym = get_symbol(index);
         if (sym->kind == OBJ_CONST) {
             //TODO: 加载常量的 p-code
-            //gen(LIT, 0, sym->val); // 常量，直接加载值
+            emit(LIT, 0, sym->val);
         } else if (sym->kind == OBJ_VAR) {
             //TODO: 加载变量的 p-code
-            //gen(LOD, currentLevel - sym->level, sym->address); // 变量，加载地址
+            emit(LOD, currentLevel - sym->level, sym->address);
+
         } else {
             error(ERR_INVALID_IDENTIFIER_USAGE, currentToken.line, currentToken.column);
         }
@@ -415,7 +458,7 @@ void parse_factor() {
     }
     else if (currentToken.type == number) {
         //TODO: 加载数字面量的 p-code
-        //gen(LIT, 0, std::stoi(currentToken.lexeme)); // 加载常数字面量
+        emit(LIT, 0, strToInt(currentToken.lexeme));
         getNextToken(); // 消费 number
     }
     else if (currentToken.type == lparen) {

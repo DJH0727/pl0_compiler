@@ -10,7 +10,7 @@ Instruction code[MAX_CODE_SIZE];
 int codeIndex = 0;
 
 // 添加一条指令
-void emit(fct f, int l, int a) {
+void emit(const fct f, const int l, const int a) {
     if (codeIndex >= MAX_CODE_SIZE) {
         error("Too many instructions");
         return;
@@ -22,7 +22,7 @@ void emit(fct f, int l, int a) {
 }
 
 // 打印所有指令（方便调试）
-void listCode() {
+void printListCode() {
     for (int i = 0; i < codeIndex; i++) {
         std::cout << i << ": ";
         std::cout << getFctName(code[i].f) << " ";
@@ -36,8 +36,8 @@ std::string getFctName(fct f) {
         case OPR: return "opr";
         case LOD: return "lod";
         case STO: return "sto";
-        case CAL: return "cal";
-        case INT: return "int";
+        case CAL_: return "cal";
+        case INT_: return "int";
         case JMP: return "jmp";
         case JPC: return "jpc";
         default: return "unknown";

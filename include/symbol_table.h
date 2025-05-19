@@ -39,5 +39,6 @@ void remove_symbols_at_level(int level);
 Symbol* get_symbol(int index);
 // 打印符号表
 void print_symbol_table();
+int lookup_symbol_current_level(const char* name,  int current_level) ;
 int count_variables(int level);
 #endif //SYMBOL_TABLE_H

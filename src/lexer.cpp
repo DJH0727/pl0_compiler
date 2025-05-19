@@ -29,7 +29,7 @@ void getch() {
     }
 
     ch = source[pos++];
-
+    //std::cout<<"currentChar: "<<ch<<std::endl;
     if (ch == '\n') {
         line++;
         column = 0;
@@ -39,6 +39,7 @@ void getch() {
 }
 
 void getNextToken() {
+
     // 跳过空白字符
     while (ch==' ' || ch==10 || ch==13 || ch==9)  /* 忽略空格、换行、回车和TAB */
     {
@@ -49,6 +50,7 @@ void getNextToken() {
     currentToken.column = column;
     // 处理数字
     if (isDigit(ch)) {
+
         std::string numStr;
         numStr = ch;
         getch();
@@ -121,10 +123,15 @@ void getNextToken() {
             currentToken.lexeme = "<=";
             getch();
         }
+        else if (ch == '>') { // 不等于运算符
+            currentToken.type = PL0TokenType::neq;
+            currentToken.lexeme = "<>";
+            getch();
+        }
         else {
             currentToken.type = PL0TokenType::lss;
             currentToken.lexeme = "<";
-            getch();
+
         }
         return;
     }
@@ -138,7 +145,7 @@ void getNextToken() {
         else {
             currentToken.type = PL0TokenType::gtr;
             currentToken.lexeme = ">";
-            getch();
+
         }
         return;
     }

@@ -18,7 +18,7 @@ int enter_symbol(const SymbolKind kind, const char* name, const int val, const i
         error(SYMBOL_TABLE_FULL, std::string(" 无法插入符号: ")+name);
         return -1;
     }
-    if (lookup_symbol(name) != -1) {
+    if (lookup_symbol_current_level(name, level) != -1) {
         error(SYMBOL_REDEFINED, std::string(" 符号 ")+name+std::string(" 已定义"));
         return -1;
     }
@@ -32,7 +32,17 @@ int enter_symbol(const SymbolKind kind, const char* name, const int val, const i
     sym->size = size;
     return symbol_count++;
 }
-
+int lookup_symbol_current_level(const char* name, const int current_level) {
+    for (int i = symbol_count - 1; i >= 0; i--) {  // 从后向前查找，优先最近声明的
+        if (symbolTable[i].level == 0&&strcmp(symbolTable[i].name, name) == 0) {
+            return i;
+        }
+        if (symbolTable[i].level == current_level && strcmp(symbolTable[i].name, name) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
 // 查找符号，返回索引，找不到返回 -1
 int lookup_symbol(const char* name) {
     for (int i = symbol_count - 1; i >= 0; i--) {  // 从后向前查找，优先最近声明的

@@ -8,30 +8,32 @@
 #include <string>
 
 enum ErrorCode {
-    NUM_TOO_LONG,
-    ILLEGAL_IDENT_AFTER_NUMBER,
-    ILLEGAL_COLON,
-    ILLEGAL_CHARACTER,
-    LEADING_ZERO_NUMBER,
-    IDENT_TOO_LONG,
-    SYMBOL_TABLE_FULL,
-    SYMBOL_REDEFINED,
-    ERR_MISSING_PERIOD,
-    ERR_EXPECT_IDENTIFIER,
-    ERR_EXPECT_EQUAL_SIGN,
-    ERR_EXPECT_NUMBER,
-    ERR_EXPECT_SEMICOLON,
-    ERR_TOO_MANY_NESTED_PROCEDURES,
-    ERR_EXPECT_END,
-    ERR_EXPECT_THEN,
-    ERR_EXPECT_ELSE,
-    ERR_EXPECT_DO,
-    ERR_EXPECT_BECOMES,
-    ERR_EXPECT_REL_OP,
-    ERR_UNDECLARED_IDENTIFIER,
-    ERR_INVALID_IDENTIFIER_USAGE,
-    ERR_EXPECT_RPAREN,
-    ERR_INVALID_FACTOR
+    NUM_TOO_LONG,//数字过长
+    ILLEGAL_IDENT_AFTER_NUMBER,//数字后面出现非法标识符
+    ILLEGAL_COLON,//非法的冒号
+    ILLEGAL_CHARACTER,//非法字符
+    LEADING_ZERO_NUMBER,//数字前有0
+    IDENT_TOO_LONG,//标识符过长
+    SYMBOL_TABLE_FULL,//符号表已满
+    SYMBOL_REDEFINED,//符号已被重新定义
+    ERR_MISSING_PERIOD,//程序必须以句点结束
+    ERR_EXPECT_IDENTIFIER,//     期望标识符
+    ERR_EXPECT_EQUAL_SIGN,//     期望等号
+    ERR_EXPECT_NUMBER,//     期望数字
+    ERR_EXPECT_SEMICOLON,//     期望分号
+    ERR_TOO_MANY_NESTED_PROCEDURES,//     嵌套过深
+    ERR_EXPECT_END,//     期望END
+    ERR_EXPECT_THEN,//     期望THEN
+    ERR_EXPECT_ELSE,//     期望ELSE
+    ERR_EXPECT_DO,//     期望DO
+    ERR_EXPECT_BECOMES,//     期望BECOMES
+    ERR_EXPECT_REL_OP,//     期望关系运算符
+    ERR_UNDECLARED_IDENTIFIER,//     未声明的标识符
+    ERR_INVALID_IDENTIFIER_USAGE,//     标识符用法错误
+    ERR_EXPECT_RPAREN,//     期望右括号
+    ERR_INVALID_FACTOR,//     因子无效
+    ERR_PROC_NOT_DEFINED,//     过程未定义
+    ERR_NOT_VARIABLE,//     不是变量
 
 };
 #define ERROR_COUNT 100
@@ -60,7 +62,9 @@ constexpr std::array<const char*, static_cast<size_t>(ERROR_COUNT)> error_messag
     "未声明的标识符",
     "标识符用法错误",
     "期望右括号",
-    "因子无效"
+    "因子无效",
+    "过程未定义",
+    "不是变量"
 
 }};
 
