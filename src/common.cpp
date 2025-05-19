@@ -3,21 +3,22 @@
 //
 #include "common.h"
 #include <iostream>
-void error(const ErrorCode err_code,int line,int col) {
+void error(const ErrorCode err_code, const int line, const int col) {
     std::cerr<<" ["<<line<<":"<<col <<"] " << "Error: " << err_code<< " " <<get_error_message(err_code) << std::endl;
     exit(1);
 }
-std::string get_error_message(const ErrorCode err_code) {
-   switch (err_code) {
-       case ErrorCode::NUM_TOO_LONG:return "数字过长";
-       case ErrorCode::ILLEGAL_IDENT_AFTER_NUMBER:return "数字后面出现非法标识符";
-       case ErrorCode::ILLEGAL_COLON:return "冒号后面出现非法字符";
-       case ErrorCode::ILLEGAL_CHARACTER:return "非法字符";
-       case ErrorCode::LEADING_ZERO_NUMBER:return "不允许数字以0开头";
-       default:return "未知错误";
-   }
+void error(const ErrorCode err_code,const std::string& msg) {
+    std::cerr<<"Error: " << err_code<< " " <<get_error_message(err_code) << " " << msg << std::endl;
+    exit(1);
 }
-char* readFile(std::string filename) {
+void error(const std::string &msg) {
+    std::cerr<<"Error: " << msg << std::endl;
+    exit(1);
+}
+std::string get_error_message(const ErrorCode err_code) {
+   return error_messages[static_cast<size_t>(err_code)];
+}
+char* readFile(const std::string &filename) {
     const char* fileName = filename.data();
     FILE* file = fopen(fileName, "rb");
     if (file == nullptr) {

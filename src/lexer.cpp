@@ -3,6 +3,8 @@
 //
 #include "lexer.h"
 #include <iostream>
+#include <symbol_table.h>
+
 #include "global.h"
 static const char* source = NULL;  // 源代码字符串
 static int pos = 0;         // 当前字符索引
@@ -82,6 +84,11 @@ void getNextToken() {
             idStr += ch;
             getch();
         }
+        // 判断标识符长度是否超过最大值
+        if (idStr.length() > MAX_IDENTIFIER_LENGTH) {
+            error(IDENT_TOO_LONG, line, column);
+            return;
+        }
         // 判断关键字
         const int index = isKeywords(idStr);
         if (index!= -1) {
@@ -103,6 +110,7 @@ void getNextToken() {
         }
         else {
             error(ILLEGAL_COLON, line, column);
+
         }
         return;
     }
@@ -141,10 +149,12 @@ void getNextToken() {
         currentToken.lexeme = SingleCharSymbols[index];
         getch();
     }
+    else if (ch == 0) {return;}
     else {
         //非法字符，比如中文字符
         error(ILLEGAL_CHARACTER, line, column);
     }
+
 
 
 

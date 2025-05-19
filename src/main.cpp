@@ -4,6 +4,9 @@
 
 #include <windows.h>
 #include <iostream>
+#include <parser.h>
+#include <symbol_table.h>
+
 #include "global.h"
 #include "token.h"
 #include "lexer.h"
@@ -26,12 +29,9 @@ int main() {
     }
 
     initLexer(code);
-    while (true) {
-        getNextToken();
-        std::cout<<currentToken.toString()<<std::endl;
-        if (currentToken.type == period)
-            break;
-    }
+    getNextToken();
+    parse_program();
+    print_symbol_table();
 
 
     free(code);

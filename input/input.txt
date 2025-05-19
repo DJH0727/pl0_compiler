@@ -1,16 +1,20 @@
-var r, h, len, a1, a2, volumn;
+const x = 10;
+
+var a, b;
+
+procedure square;
+var s;
+begin
+    s := a;
+    b := s
+end;
 
 begin
-	read(r);
-	read(h);
-
-	len := 2 * 3 * r;
-	a1 := 3 * r * r;
-	a2 := a1 + a1 + len * h;
-	volumn := a1 * h;
-	
-	write(len);
-	write(a1);
-	write(a2);
-	write(volumn);
+    call square;
+    if x <> 0 then a := x;
+    while a < 20 do
+    begin
+        a := a + 1;
+        call square
+    end
 end.
