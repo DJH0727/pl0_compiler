@@ -93,106 +93,6 @@ void getNextToken();        // 获取下一个词法单元
 void getch();               // 获取下一个字符
 
 ```
-```c++
-// lexer.cpp
-static const char* source = NULL;  // 源代码字符串
-static int pos = 0;         // 当前字符索引
-static int line = 1;        // 当前行号
-static int column = 1;      // 当前列号
-static char ch;             // 当前字符
-//getch 读取下一个字符 并更新pos、line、column
-//主要函数：getNextToken()
-/*当前字符为空白符时，跳过空白符，直到遇到非空白符*/
-    while (ch==' ' || ch==10 || ch==13 || ch==9)  /* 忽略空格、换行、回车和TAB */
-    {
-        getch();
-    }
-    
-/* 设置当前token的行列信息 */
- currentToken.line = line;
- currentToken.column = column;
- 
-/* 数字 */
-if (isDigit(ch)) {
-    std::string numStr = ch;
-    getch();
-    while (isDigit(ch)) {
-        numStr += ch; getch();
-    }
-    //TODO: 整数不能以0开头
-    //TODO: 判断数字长度是否超过最大值
-    //TODO: 数字后面不能跟标识符，不能出现形如 123abc 的情况
-    //TODO: 设置currentToken
-    return;    
-}
-
-/* 标识符 */
-if (isLetter(ch)) {
-        std::string idStr = ch;
-        getch();
-        while (isLetter(ch) || isDigit(ch)) {
-            idStr += ch;getch();
-        }
-        //TODO: 判断标识符长度是否超过最大值
-        //判断关键字
-        const int index = isKeywords(idStr);
-        //index != -1 代表是关键字
-        //否则是标识符
-        //TODO: 设置currentToken
-        return;
-}
-
-/* 运算符 */
-if (ch == ':') {
-        getch();
-        if (ch == '=') {// 赋值运算符
-            //TODO: 设置currentToken
-            getch();
-        }
-        else error(ILLEGAL_COLON, line, column);
-        return;
-}
-if (ch == '<') {
-        getch();
-        if (ch == '=') { // 小于等于运算符
-           //TODO: 设置currentToken
-            getch();
-        }
-        else if (ch == '>') { // 不等于运算符
-            //TODO: 设置currentToken
-            getch();
-        }
-        else {
-           //TODO: 设置currentToken
-           //这里不需要getch()，否则类似a>0中的0会被吃掉
-        }
-        return;
-}
-if (ch == '>') {
-        getch();
-        if (ch == '=') { // 大于等于运算符
-            //TODO: 设置currentToken
-            getch();
-        }
-        else {
-            //TODO: 设置currentToken
-        }
-        return;
-}
-
-/* 其他单字符符号 */
-    // 处理单字符符号
-    const int index = isSingleCharSymbol(ch);
-    if (index != -1) {
-        //TODO: 设置currentToken
-        getch();
-    }
-    else if (ch == 0) {return;}
-    else {
-        //非法字符，比如中文字符
-        error(ILLEGAL_CHARACTER, line, column);
-    }
-```
 
 ## 名字表
 在实现语法分析前，需要先实现名字表。名字表用于存储变量、过程名、常量名等符号的定义和相关信息。
@@ -217,22 +117,125 @@ int enter_symbol(SymbolKind kind, const char* name, int val, int level, int addr
 int lookup_symbol(const char* name);//查找符号，返回符号表索引
 Symbol* get_symbol(int index);//获取符号指针
 ```
+
+## 代码生成
+代码生成器负责将PL0代码转换为P-code。
+
+在语法分析器中，在特定位置调用代码生成器的emit()函数生成P-code。
 ```c++
-// symbol_table.cpp
-int enter_symbol(...) {
-//TODO:判断是否超过最大符号个数
-//TODO:判断是否重复定义
-symbolTable[symbol_count] = new Symbol{...};//伪代码
-return symbol_count++;
-}
-/*查找符号，返回索引，找不到返回 -1 */
-int lookup_symbol(const char* name) {
-// 从后向前查找，优先最近声明的
-    return find_symbol? index:-1;
-}
-/*获取符号指针*/
-Symbol* get_symbol(const int index) {
-    return(index < 0 || index >= symbol_count) ? nullptr : &symbolTable[index];
+// codegen.h
+enum fct  {LIT,...}; // 过程类型
+//P-code指令结构体
+struct Instruction {
+    fct  f;  // 指令操作码
+    int l;      // 层次差
+    int a;      // 地址或立即数
+};
+//OPR l a  中a的类型
+enum a_type {
+    a_release = 0,    //释放数据段
+...
+};
+extern int codeIndex;           // 当前指令计数
+extern Instruction code[MAX_CODE_SIZE];      // 指令数组
+void emit(fct f, int l, int a);  // 添加一条指令
+```
+```c++
+// codegen.cpp
+...
+```
+## 语法分析
+语法分析器将词法分析器生成的词法单单元解析
+语法分析器的工作流程：
+1. 调用getNextToken()函数获取下一个词法单元，并根据词法单元的类型进行语法分析。
+2. 调用相应的语法分析函数，进行语法分析。
+3. 调用代码生成器的emit()函数生成P-code（若需要）。
+4. 重复步骤1-3，直到词法分析器返回结束标记。
+
+```c++
+// parser.h
+void parse_program();
+void parse_block();
+void parse_const_decl();
+void parse_var_decl();
+void parse_proc_decl();
+void parse_stmt();
+void parse_condition();
+void parse_expression();
+void parse_term();
+void parse_factor();
+int currentLevel = 0;  // 当前嵌套层级
+int varCount[MAX_NESTING_LEVEL] = {0, 0, 0};      // 当前层级变量数量
+```
+### parse_program() 
+***语法分析入口函数，开始解析整个程序（Program → Block .）***
+```c++
+void parse_program() {
+    parse_block();
+   //TODO: 判断是否以.结尾
 }
 ```
+### parse_block() 
+***解析Block语法块 Block  → [ConstDecl] [VarDecl][ProcDecl] Stmt***
 
+解析一个代码块，包含常量声明、变量声明、过程声明和语句。
+
+### parse_const_decl() 
+***解析ConstDecl语法块 ConstDecl → const ConstDef {, ConstDef} ;***
+
+解析const声明语句，将常量定义加入符号表
+
+### parse_var_decl() 
+***解析VarDecl语法块 VarDecl → var ident {, ident} ;***
+
+解析变量声明语句，将变量定义加入符号表
+
+### parse_proc_decl() 
+***解析ProcDecl语法块 ProcDecl → procedure ident ; Block ; {procedure ident ; Block ;}***
+
+解析过程声明语句，将过程定义加入符号表
+
+### parse_stmt() 
+***解析Stmt语法块 Stmt   → ident := Exp | call ident | begin Stmt {; Stmt} end | if Cond then Stmt | while Cond do Stmt | ε***
+
+***拓展文法Stmt   →  read (ident {,ident} ) | write ( Exp {, Exp} )***
+
+1. 解析赋值语句
+2. 解析过程调用语句
+3. 解析复合语句
+4. 解析条件语句
+5. 解析循环语句
+6. 空语句
+
+### parse_condition() 
+***解析Cond语法块 Cond  → odd Exp | Exp RelOp Exp***
+
+解析条件表达式，包括奇偶判断和关系运算
+
+### parse_expression() 
+***解析Exp语法块 Exp   → [+ | − ] Term {+ Term | − Term}***
+
+解析表达式，包括一元运算符（+、-）和加减运算
+
+### parse_term() 
+***解析Term语法块 Term  → Factor {∗ Factor | / Factor}***
+
+解析项，包括乘除运算
+
+### parse_factor() 
+***解析Factor语法块 Factor  → ident | number | ( Exp )***
+
+解析因子，包括标识符、数字和括号表达式
+
+## 虚拟机
+虚拟机用于执行P-code。
+在语法分析器执行完代码生成后，执行P-code。
+
+```c++
+    int pc = 0;            // 程序计数器
+    int bp = 0;            // 基地址指针
+    int sp = -1;           // 栈顶指针
+    int stack[ STACK_SIZE ] = {0}; // 数据栈
+...
+//根据指令 fct l a 执行相应操作
+```

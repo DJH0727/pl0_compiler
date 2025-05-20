@@ -14,16 +14,11 @@
 
 int currentLevel = 0;  // 当前嵌套层级
 int varCount[MAX_NESTING_LEVEL] = {0, 0, 0};      // 当前层级变量数量
-bool isNewProc = false;  // 是否是新过程
-
-
-
 
 void match(const PL0TokenType type) {
     if (currentToken.type != type) {
         error(ERR_UNEXPECTED_TOKEN, currentToken.line, currentToken.column);
     }
-
     getNextToken();
     if (currentToken.line != lineCounter) {
         lineCounter = currentToken.line;
@@ -33,8 +28,6 @@ void match(const PL0TokenType type) {
 
 void parse_program() {
     parse_block();
-
-
     if (currentToken.type != period) {
         //程序必须以句点结束
         error(ERR_MISSING_PERIOD, currentToken.line, currentToken.column);
