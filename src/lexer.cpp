@@ -3,6 +3,7 @@
 //
 #include "lexer.h"
 #include <iostream>
+#include <sstream>
 #include <symbol_table.h>
 
 static const char* source = NULL;  // 源代码字符串
@@ -12,9 +13,25 @@ static int column = 1;      // 当前列号
 static char ch;             // 当前字符
 Token currentToken;
 
+// 预处理函数：删除所有 // 注释
+std::string preprocessSourceCode(const std::string& source) {
+    std::istringstream iss(source);
+    std::ostringstream oss;
+    std::string line;
+    while (std::getline(iss, line)) {
+        const size_t commentPos = line.find("//");
+        if (commentPos != std::string::npos) {
+            line = line.substr(0, commentPos); // 截断注释
+        }
+        oss << line << '\n'; // 保留换行
+    }
+    return oss.str();
+}
+
 // 初始化词法分析器（传入源代码字符串）
 void initLexer(const char* src) {
-    source = src;   // 绑定源代码
+    static std::string cleanedSource = preprocessSourceCode(src);
+    source = cleanedSource.c_str();   // 绑定源代码
     pos = 0;        // 初始化索引
     line = 1;       // 第一行
     column = 0;     // 第一列

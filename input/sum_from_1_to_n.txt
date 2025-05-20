@@ -1,0 +1,14 @@
+// 循环测试，计算1+2+...+n
+var n, i, sum;
+
+begin
+    read (n);
+    i := 1;
+    sum := 0;
+    while i <= n do
+    begin
+        sum := sum + i;
+        i := i + 1;
+    end;
+    write (sum);
+end.

@@ -96,6 +96,8 @@ std::string getFctName(fct f) {
         case INT_: return "int";
         case JMP: return "jmp";
         case JPC: return "jpc";
+        case RED: return "red";
+        case WRT: return "wrt";
         default: return "unknown";
     }
 }

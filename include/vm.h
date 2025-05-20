@@ -9,4 +9,5 @@
 
 void execute_program();
 int base(int l, int b, const int stack[]) ;
+void print_stack(int stack[]);
 #endif //VM_H

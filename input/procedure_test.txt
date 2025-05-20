@@ -1,0 +1,22 @@
+const a = 10;
+var x, y, z;
+
+procedure outer;           // 外层过程
+    var u;
+    procedure inner;       // 内层嵌套过程
+        var v;
+        begin
+            v := a;
+            z := v + 5     // 修改全局变量 z
+        end;
+    begin
+        u := a + 1;
+        call inner         // 调用内层过程
+    end;
+
+begin
+    x := 1;
+    y := 2;
+    call outer;             // 调用外层过程（内部将调用 inner）
+    writeln(z)              // 输出 z 的值，应该为 15
+end.

@@ -6,6 +6,11 @@
 #define COMMON_H
 #include <array>
 #include <string>
+#define OUTPUT_STRING "output/"
+#define INPUT_STRING "input/"
+
+const std::string OUTPUT_PATH = OUTPUT_STRING;
+const std::string INPUT_PATH =  INPUT_STRING;
 
 enum ErrorCode {
     NUM_TOO_LONG,//数字过长
@@ -35,6 +40,7 @@ enum ErrorCode {
     ERR_PROC_NOT_DEFINED,//     过程未定义
     ERR_NOT_VARIABLE,//     不是变量
     ERR_UNEXPECTED_TOKEN,//     与预期不符
+    ERR_EXPECT_LPAREN,//     期望左括号
 
 };
 #define ERROR_COUNT 100
@@ -66,7 +72,8 @@ constexpr std::array<const char*, static_cast<size_t>(ERROR_COUNT)> error_messag
     "因子无效",
     "过程未定义",
     "不是变量",
-    "与预期不符"
+    "与预期不符",
+    "期望左括号"
 
 }};
 

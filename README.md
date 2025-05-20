@@ -6,6 +6,7 @@
 - [名字表](#名字表)
 - [代码生成](#代码生成)
 - [语法分析](#语法分析)
+- [虚拟机](#虚拟机)
 
 
 ## 项目结构
@@ -18,7 +19,6 @@ pl0-compiler/
 │   ├── vm.h              # 虚拟机接口
 │   ├── symbol_table.h       # 符号表接口
 │   ├── token.h             # Token 结构体定义
-│   ├──global.h             # 全局变量定义
 │   └──common.h             # 公共工具
 │
 ├── src/
@@ -40,6 +40,7 @@ Clion中设置工作目录为该项目根目录。
 
 ## 文法
 ```
+基础文法：
   Program  → Block . 
   Block  → [ConstDecl] [VarDecl][ProcDecl] Stmt 
   ConstDecl → const ConstDef {, ConstDef} ; 
@@ -52,6 +53,9 @@ Clion中设置工作目录为该项目根目录。
   Exp   → [+ | − ] Term {+ Term | − Term} 
   Term  → Factor {∗ Factor | / Factor} 
   Factor  → ident | number | ( Exp ) 
+拓展文法：
+Stmt   →  read (ident {,ident} ) | write ( Exp {, Exp} )
+支持单行注释： //...
 ```
 
 ## 词法分析

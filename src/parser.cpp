@@ -361,6 +361,79 @@ void parse_stmt() {
             code[jpcIndex].a = codeIndex;
             break;
         }
+        case readsym: {
+            match(readsym);   // 消费 read
+
+            if (currentToken.type != lparen) {
+                error(ERR_EXPECT_LPAREN, currentToken.line, currentToken.column);
+                return;
+            }
+            match(lparen);    // 消费 '('
+
+            do {
+                if (currentToken.type != ident) {
+                    error(ERR_EXPECT_IDENTIFIER, currentToken.line, currentToken.column);
+                    return;
+                }
+
+                char varName[MAX_IDENTIFIER_LENGTH + 1];
+                strcpy(varName, currentToken.lexeme.c_str());
+
+                const int index = lookup_symbol(varName);
+                const Symbol* sym = get_symbol(index);
+
+                if (sym == nullptr || sym->kind != OBJ_VAR) {
+                    error(ERR_UNDECLARED_IDENTIFIER, currentToken.line, currentToken.column);
+                    return;
+                }
+
+                match(ident);  // 消费变量标识符
+
+                emit(RED, 0, 0);         // 读入一个整数，压栈
+                emit(STO,  currentLevel - sym->level, sym->address);  // 存到变量
+
+                if (currentToken.type == comma) {
+                    match(comma);  // 消费 ','
+                } else {
+                    break;
+                }
+            } while(true);
+
+            if (currentToken.type != rparen) {
+                error(ERR_EXPECT_RPAREN, currentToken.line, currentToken.column);
+                return;
+            }
+            match(rparen);  // 消费 ')'
+
+            break;
+        }
+        case writesym: {
+            match(writesym);  // 消费 'write'
+
+            if (currentToken.type != lparen) {
+                error(ERR_EXPECT_LPAREN, currentToken.line, currentToken.column);
+                return;
+            }
+            match(lparen);  // 消费 '('
+
+            do {
+                parse_expression();         // 先计算表达式结果压栈
+                emit(WRT, 0, 0);           // OPR 14: 输出表达式结果（换成你定义的WRT也行）
+
+                if (currentToken.type == comma) {
+                    match(comma);           // 消费 ','
+                } else {
+                    break;
+                }
+            } while (true);
+
+            if (currentToken.type != rparen) {
+                error(ERR_EXPECT_RPAREN, currentToken.line, currentToken.column);
+                return;
+            }
+            match(rparen);  // 消费 ')'
+            break;
+        }
         default:
             // ε 空语句
             break;

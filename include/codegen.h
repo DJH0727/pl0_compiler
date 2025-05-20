@@ -15,7 +15,9 @@ enum fct  {
      CAL_, // 调用过程
      INT_, // 分配栈空间
      JMP, // 无条件跳转
-     JPC  // 条件跳转
+     JPC,  // 条件跳转
+     RED, // read
+     WRT, // write
 };
 std::string getFctName(fct f);  // 指令名称
 struct Instruction {

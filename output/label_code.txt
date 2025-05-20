@@ -1,16 +1,16 @@
-0 const m=7, n=85;
-1 var x,y,z,q,r;
-1 procedure abc;
-1    var t;
-2    begin
-3       x:=1;
-5    end;
-6 procedure abc1;
-6    var o;
-7    begin
-8       x:=1;
-10    end
-10    ;
-11 begin
-12     x:=1;x:=2;
-16 end.
+0 var a, b, c, max;
+1 
+1 procedure findMax;
+1 begin
+3     max := a;
+5     if b > max then
+8         max := b;
+11     if c > max then
+14         max := c;
+17 end;
+18 
+18 begin
+19     read (a, b, c);
+25     call findMax;
+26     write (max);
+28 end.

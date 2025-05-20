@@ -4,17 +4,21 @@
 #include "vm.h"
 
 #include <iostream>
+#include <limits>
 #include <ostream>
 
 #include "common.h"
 #include "codegen.h"
 
+
 void execute_program() {
+    std::cout<<"Start of executing program"<< std::endl;
+    FILE *read_write_file = fopen((OUTPUT_PATH+"read_write.txt").c_str(), "w+");
     Instruction ir{};        // 当前指令寄存器
     int pc = 0;            // 程序计数器
     int bp = 0;            // 基地址指针
     int sp = -1;           // 栈顶指针
-    int stack[ STACK_SIZE ]; // 数据栈
+    int stack[ STACK_SIZE ] = {0}; // 数据栈
 
     pc =0; bp = 0; sp = -1;
     stack[0]=0;stack[1]=0;stack[2]=0;
@@ -112,11 +116,31 @@ void execute_program() {
                    pc = ir.a;
                }
                break;
+           case RED: {
+               std::cout << "read>>  ";
+               int num;
+               if (!(std::cin >> num)) {
+                   error("Invalid input. Please enter an integer.");
+               }
+               stack[++sp] = num;  // 把输入值压栈
+               fprintf(read_write_file, "read>>   %d\n", num);
+               break;
+           }
+           case WRT: {
+               const int value = stack[sp--];  // 弹出要输出的值
+               std::cout <<"write<< "<< value<<std::endl;
+               fprintf(read_write_file, "write<<  %d\n", value);
+               break;
+           }
            default: error("Illegal instruction");
        }
+
+        //print_stack(stack);
     }while (pc != 0);
 
-    std::cout<<"Finished executing program"<< std::endl;
+    fclose(read_write_file);
+    std::cout<<"End of executing program"<< std::endl;
+    std::cout<<"I/O is in output/read_write.txt"<< std::endl;
 }
 
 // 静态链查找
@@ -127,4 +151,10 @@ int base(int l, const int b, const int stack[]) {
         l--;
     }
     return b1;
+}
+void print_stack(int stack[]) {
+    for (int i = 0; i < STACK_SIZE; i++) {
+        std::cout <<"["<<i<<"]" << stack[i] << " ";
+    }
+    std::cout << std::endl;
 }
