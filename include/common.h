@@ -34,6 +34,7 @@ enum ErrorCode {
     ERR_INVALID_FACTOR,//     因子无效
     ERR_PROC_NOT_DEFINED,//     过程未定义
     ERR_NOT_VARIABLE,//     不是变量
+    ERR_UNEXPECTED_TOKEN,//     与预期不符
 
 };
 #define ERROR_COUNT 100
@@ -64,7 +65,8 @@ constexpr std::array<const char*, static_cast<size_t>(ERROR_COUNT)> error_messag
     "期望右括号",
     "因子无效",
     "过程未定义",
-    "不是变量"
+    "不是变量",
+    "与预期不符"
 
 }};
 

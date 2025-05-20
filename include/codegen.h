@@ -25,10 +25,14 @@ struct Instruction {
 };
 #define FCT_COUNT 8
 #define MAX_CODE_SIZE  500  // 指令数组最大长度
+void init_code(const char* original_code);  // 初始化指令数组
 // 指令生成接口
 void emit(fct f, int l, int a);  // 添加一条指令
 void printListCode();                 // 打印所有指令
 void print_code_to_file(FILE *file) ;
+void print_label_code();//打印带标签的原始代码
+void print_label_code_to_file(FILE *file);
 extern Instruction code[MAX_CODE_SIZE];      // 指令数组
 extern int codeIndex;           // 当前指令计数
+extern int lineCounter;         // 当前行号
 #endif //CODEGEN_H

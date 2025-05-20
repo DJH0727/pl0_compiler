@@ -8,6 +8,12 @@
 #include <symbol_table.h>
 //#define DEBUG 1
 #define PRINT2FILE 1
+// 路径
+#define OUTPUT_STRING "output/"
+#define INPUT_STRING "input/"
+
+const std::string OUTPUT_PATH = OUTPUT_STRING;
+const std::string INPUT_PATH =  INPUT_STRING;
 #include "global.h"
 #include "token.h"
 #include "lexer.h"
@@ -32,14 +38,18 @@ int main() {
     }
     initLexer(code);
     getNextToken();
+    init_code(code);
     parse_program();
-    print_symbol_table();
-    printListCode();
+    //print_symbol_table();
+    //printListCode();
+    print_label_code();
 #ifdef PRINT2FILE
     FILE* symbol_table_file = fopen((OUTPUT_PATH+"symbol_table.txt").c_str(),"w");
     FILE* code_file = fopen((OUTPUT_PATH+"code.txt").c_str(),"w");
+    FILE* label_file = fopen((OUTPUT_PATH+"label_code.txt").c_str(),"w");
     print_symbol_table_to_file(symbol_table_file);
     print_code_to_file(code_file);
+    print_label_code_to_file(label_file);
     fclose(symbol_table_file);
 #endif
 

@@ -8,12 +8,7 @@
 #define DEBUG_MODE 1
 
 
-// 路径
-#define OUTPUT_STRING "output/"
-#define INPUT_STRING "input/"
 
-const std::string OUTPUT_PATH = OUTPUT_STRING;
-const std::string INPUT_PATH =  INPUT_STRING;
 
 
 

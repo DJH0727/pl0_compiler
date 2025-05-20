@@ -6,13 +6,30 @@
 #include <codegen.h>
 #include <cstring>
 #include <iostream>
+#include <sstream>
 #include <symbol_table.h>
+#include <vector>
 
 #include "lexer.h"
 
 int currentLevel = 0;  // 当前嵌套层级
 int varCount[MAX_NESTING_LEVEL] = {0, 0, 0};      // 当前层级变量数量
 bool isNewProc = false;  // 是否是新过程
+
+
+
+
+void match(const PL0TokenType type) {
+    if (currentToken.type != type) {
+        error(ERR_UNEXPECTED_TOKEN, currentToken.line, currentToken.column);
+    }
+
+    getNextToken();
+    if (currentToken.line != lineCounter) {
+        lineCounter = currentToken.line;
+    }
+}
+
 
 void parse_program() {
     parse_block();
@@ -32,6 +49,7 @@ void parse_block() {
     varCount[currentLevel] = 0; // 变量计数归零
     const int index = codeIndex; // 记录当前代码段的返回地址
     emit(JMP, 0, 0); // 进入程序，生成入口代码
+
 
     if (currentToken.type == constsym) {
         parse_const_decl();
@@ -58,9 +76,10 @@ void parse_block() {
 
 
 void parse_const_decl() {
-
-    getNextToken();  // 跳过const关键字
-
+    
+   
+    match(constsym);  // 跳过const关键字
+   
     while (true) {
         // 标识符检查
         if (currentToken.type != ident) {
@@ -72,8 +91,10 @@ void parse_const_decl() {
         // 复制标识符名字，注意防止越界
         strncpy(constName, currentToken.lexeme.c_str(), MAX_IDENTIFIER_LENGTH);
         constName[MAX_IDENTIFIER_LENGTH] = '\0';
-
-        getNextToken();  // 跳过标识符
+        
+       
+        match(ident);  // 跳过标识符
+       
 
         // 必须是等号
         if (currentToken.type != eql) {
@@ -81,7 +102,7 @@ void parse_const_decl() {
             return;
         }
 
-        getNextToken();  // 跳过等号
+        match(eql);  // 跳过等号
 
         // 必须是数字
         if (currentToken.type != number) {
@@ -91,14 +112,14 @@ void parse_const_decl() {
 
         const int val = strToInt(currentToken.lexeme);
 
-        getNextToken();  // 跳过数字
+        match(number);  // 跳过数字
 
         //  加入符号表（常量）
         enter_symbol(OBJ_CONST, constName, val, currentLevel, 0, 0);
 
         //处理多个常量，用逗号分隔
         if (currentToken.type == comma) {
-            getNextToken();  // 跳过逗号，继续解析下一个常量定义
+            match(comma);  // 跳过逗号，继续解析下一个常量定义
         } else {
             break;
         }
@@ -110,7 +131,8 @@ void parse_const_decl() {
         return;
     }
 
-    getNextToken();  // 跳过分号，结束常量声明部分
+    match(semicolon);  // 跳过分号，结束常量声明部分
+    
 }
 
 
@@ -122,7 +144,7 @@ void parse_var_decl() {
         return; // 不是 var 开头，说明没有变量声明
     }
 
-    getNextToken(); // 消费 'var'
+    match(varsym); // 消费 'var'
 
     // 变量地址初始值（局部变量在本层的偏移）
     int address = 3;//0 SL; 1 DL; 2 RA
@@ -139,10 +161,10 @@ void parse_var_decl() {
         varCount[currentLevel]++; // 变量计数
         //std::cout << "varCount: " << varCount[currentLevel] << std::endl;
 
-        getNextToken(); // 消费 ident
+        match(ident); // 消费 ident
 
         if (currentToken.type == comma) {
-            getNextToken(); // 消费逗号
+            match(comma); // 消费逗号
         } else {
             break;
         }
@@ -153,7 +175,7 @@ void parse_var_decl() {
         return;
     }
 
-    getNextToken(); // 消费分号
+    match(semicolon); // 消费分号
     //print_symbol_table(); // 打印符号表
 }
 
@@ -168,7 +190,7 @@ void parse_proc_decl() {
             return;
         }
 
-        getNextToken(); // 消费 'procedure'
+        match( procsym); // 消费 'procedure'
 
         if (currentToken.type != ident) {
             error(ERR_EXPECT_IDENTIFIER, currentToken.line, currentToken.column);
@@ -179,14 +201,15 @@ void parse_proc_decl() {
         char procName[MAX_IDENTIFIER_LENGTH + 1];
         strcpy(procName, currentToken.lexeme.c_str());
 
-        getNextToken(); // 消费标识符
+        match( ident); // 消费标识符
 
         if (currentToken.type != semicolon) {
             error(ERR_EXPECT_SEMICOLON, currentToken.line, currentToken.column);
             return;
         }
 
-        getNextToken(); // 消费 ';'
+        match( semicolon) ; // 消费 ';'
+
 
         // 插入过程符号（地址、val 先设为 0，稍后生成）
        int procIndex = enter_symbol(OBJ_PROC, procName, 0, currentLevel, 0, 0);
@@ -207,7 +230,7 @@ void parse_proc_decl() {
             return;
         }
 
-        getNextToken(); // 消费过程体后的 ';'
+        match( semicolon); // 消费过程体后的 ';'
     }
 }
 
@@ -235,14 +258,14 @@ void parse_stmt() {
             const int levelDiff = currentLevel - varLevel;
             const int addr = sym->address;
 
-            getNextToken(); // 消费 ident
+            match( ident); // 消费 ident
 
             if (currentToken.type != becomes) { // := 符号
                 error(ERR_EXPECT_BECOMES, currentToken.line, currentToken.column);
                 return;
             }
 
-            getNextToken(); // 消费 :=
+            match(  becomes); // 消费 :=
 
             parse_expression(); // 解析表达式
 
@@ -252,7 +275,7 @@ void parse_stmt() {
         }
         case callsym: {
             // 调用语句: call ident
-            getNextToken(); // 消费 call
+            match(  callsym); // 消费 call
 
             if (currentToken.type != ident) {
                 error(ERR_EXPECT_IDENTIFIER, currentToken.line, currentToken.column);
@@ -267,7 +290,7 @@ void parse_stmt() {
                 error(ERR_PROC_NOT_DEFINED, currentToken.line, currentToken.column);
             }
 
-            getNextToken(); // 消费 ident
+            match( ident); // 消费 ident
 
             // 生成调用过程的 p-code
             const Symbol* procSymbol = get_symbol(index);
@@ -276,12 +299,12 @@ void parse_stmt() {
         }
         case beginsym: {
             // begin Stmt {; Stmt} end
-            getNextToken(); // 消费 begin
+            match(  beginsym); // 消费 begin
 
             parse_stmt();
 
             while (currentToken.type == semicolon) {
-                getNextToken(); // 消费分号
+                match(  semicolon); // 消费分号
                 parse_stmt();
             }
 
@@ -290,13 +313,13 @@ void parse_stmt() {
                 return;
             }
 
-            getNextToken(); // 消费 end
+            match(  endsym); // 消费 end
 
             break;
         }
         case ifsym: {
             // if Cond then Stmt
-            getNextToken(); // 消费 if
+            match(  ifsym); // 消费 if
 
              parse_condition();
 
@@ -305,7 +328,7 @@ void parse_stmt() {
                 return;
             }
 
-            getNextToken(); // 消费 then
+            match(  thensym); // 消费 then
             // 记录当前 codeIndex，用于回填 JPC 跳转地址
             const int jpcIndex = codeIndex;
             // 生成 JPC 指令，暂时跳转地址为 0，稍后回填
@@ -317,7 +340,7 @@ void parse_stmt() {
         }
         case whilesym: {
             // while Cond do Stmt
-            getNextToken(); // 消费 while
+            match(  whilesym); // 消费 while
             const int loopStartIndex = codeIndex;
             parse_condition();
 
@@ -326,7 +349,7 @@ void parse_stmt() {
                 return;
             }
 
-            getNextToken(); // 消费 do
+            match(  dosym); // 消费 do
 
 
             const int jpcIndex = codeIndex;
@@ -347,7 +370,7 @@ void parse_stmt() {
 void parse_condition() {
     if (currentToken.type == oddsym) {
         // odd Exp
-        getNextToken(); // 消费 'odd'
+        match(  oddsym); // 消费 'odd'
         parse_expression();    // 解析表达式
 
         emit(OPR, 0, 6);
@@ -369,7 +392,7 @@ void parse_condition() {
             return;
         }
 
-        getNextToken(); // 消费关系运算符
+        match(  currentToken.type); // 消费关系运算符
 
         parse_expression(); // 右边表达式
 
@@ -383,7 +406,7 @@ void parse_expression() {
     PL0TokenType op = nul;
     if (currentToken.type == plus || currentToken.type == minus) {
         op = currentToken.type;
-        getNextToken(); // 消费 '+' 或 '-'
+        match( op); // 消费 '+' 或 '-'
     }
 
     parse_term(); // 先解析一个项（Term）
@@ -396,7 +419,7 @@ void parse_expression() {
     // 后续的 + 或 - 连接的 Term
     while (currentToken.type == plus || currentToken.type == minus) {
         op = currentToken.type;
-        getNextToken(); // 消费 '+' 或 '-'
+        match( op); // 消费 '+' 或 '-'
 
         parse_term();
 
@@ -415,7 +438,7 @@ void parse_term() {
 
     while (currentToken.type == times || currentToken.type == slash) {
         const PL0TokenType op = currentToken.type;
-        getNextToken(); // 消费 '*' 或 '/'
+        match(  op); // 消费 '*' 或 '/'
 
         parse_factor(); // 右边的因子
 
@@ -447,20 +470,20 @@ void parse_factor() {
             error(ERR_INVALID_IDENTIFIER_USAGE, currentToken.line, currentToken.column);
         }
 
-        getNextToken(); // 消费标识符
+        match(  ident); // 消费标识符
     }
     else if (currentToken.type == number) {
         emit(LIT, 0, strToInt(currentToken.lexeme));
-        getNextToken(); // 消费 number
+        match(  number); // 消费 number
     }
     else if (currentToken.type == lparen) {
-        getNextToken(); // 消费 '('
+        match(  lparen); // 消费 '('
         parse_expression(); // 递归解析表达式
         if (currentToken.type != rparen) {
             error(ERR_EXPECT_RPAREN, currentToken.line, currentToken.column);
             return;
         }
-        getNextToken(); // 消费 ')'
+        match(  rparen); // 消费 ')'
     }
     else {
         error(ERR_INVALID_FACTOR, currentToken.line, currentToken.column);

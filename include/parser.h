@@ -4,6 +4,11 @@
 
 #ifndef PARSER_H
 #define PARSER_H
+#include <string>
+#include <token.h>
+void match(PL0TokenType type);// 匹配token的类型
+
+void insert_label_code();
 
 // 语法分析入口函数，开始解析整个程序（Program → Block .）
 void parse_program();

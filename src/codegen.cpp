@@ -5,9 +5,45 @@
 
 #include <common.h>
 #include <iostream>
+#include <sstream>
 
-Instruction code[MAX_CODE_SIZE];
+Instruction code[MAX_CODE_SIZE];//p-code
+std::string originalCode[MAX_CODE_SIZE];//原始代码
+std::string labeledCode[MAX_CODE_SIZE];//带标签的代码
 int codeIndex = 0;
+int lineCounter = 1;
+int lastLineCounter = 0;//上一次打印的行号
+int originalLineCount = 0;
+
+void init_code(const char* original_code) {
+    //将code转化为字符串数组，根据换行符分割
+    const std::string codeStr(original_code);
+    std::istringstream iss(codeStr);
+    std::string line;
+
+
+    while (std::getline(iss, line)) {
+        if (originalLineCount >= MAX_CODE_SIZE) break;
+        originalCode[originalLineCount++] = line;
+    }
+}
+
+void print_label_code() {
+    for (int i = 0; i < originalLineCount; i++) {
+        std::cout <<labeledCode[i] << std::endl;
+    }
+}
+void print_label_code_to_file(FILE *file) {
+    for (int i = 0; i < originalLineCount; i++) {
+        fprintf(file, "%s\n", labeledCode[i].c_str());
+    }
+}
+void label_code() {
+    for (int i = lastLineCounter; i < lineCounter; i++) {
+        labeledCode[i] = std::to_string(codeIndex) + " " + originalCode[i];
+    }
+    lastLineCounter = lineCounter;
+}
 
 // 添加一条指令
 void emit(const fct f, const int l, const int a) {
@@ -15,6 +51,8 @@ void emit(const fct f, const int l, const int a) {
         error("Too many instructions");
         return;
     }
+    label_code();//给当前行添加标签
+
     code[codeIndex].f = f;
     code[codeIndex].l = l;
     code[codeIndex].a = a;

@@ -1,16 +1,16 @@
 const m=7, n=85;
 var x,y,z,q,r;
 procedure abc;
-   var b;
+   var t;
    begin
       x:=1;
    end;
-
 procedure abc1;
-   var d;
+   var o;
    begin
       x:=1;
-   end;
+   end
+   ;
 begin
-    x:=1;
+    x:=1;x:=2;
 end.
