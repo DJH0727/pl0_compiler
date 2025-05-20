@@ -1,7 +1,7 @@
 0 const m=7, n=85;
 1 var x,y,z,q,r;
 1 procedure abc;
-1                          var t;
+1    var t;
 2    begin
 3       x:=1;
 5    end;

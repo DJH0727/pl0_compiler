@@ -6,6 +6,7 @@
 #include <iostream>
 #include <parser.h>
 #include <symbol_table.h>
+#include <vm.h>
 //#define DEBUG 1
 #define PRINT2FILE 1
 // 路径
@@ -14,7 +15,6 @@
 
 const std::string OUTPUT_PATH = OUTPUT_STRING;
 const std::string INPUT_PATH =  INPUT_STRING;
-#include "global.h"
 #include "token.h"
 #include "lexer.h"
 
@@ -40,9 +40,10 @@ int main() {
     getNextToken();
     init_code(code);
     parse_program();
+    execute_program();
     //print_symbol_table();
     //printListCode();
-    print_label_code();
+    //print_label_code();
 #ifdef PRINT2FILE
     FILE* symbol_table_file = fopen((OUTPUT_PATH+"symbol_table.txt").c_str(),"w");
     FILE* code_file = fopen((OUTPUT_PATH+"code.txt").c_str(),"w");
@@ -50,6 +51,11 @@ int main() {
     print_symbol_table_to_file(symbol_table_file);
     print_code_to_file(code_file);
     print_label_code_to_file(label_file);
+    printf("Output files generated in %s.\n%s \n%s \n%s \n",
+        OUTPUT_PATH.c_str(),
+        ("symbol_table.txt"),
+        ("code.txt"),
+        ("label_code.txt"));
     fclose(symbol_table_file);
 #endif
 

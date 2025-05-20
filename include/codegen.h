@@ -23,6 +23,21 @@ struct Instruction {
     int l;      // 层次差
     int a;      // 地址或立即数
 };
+enum a_type {
+    a_release = 0,    //释放数据段
+    a_neg = 1,           //取负
+    a_plus = 2,    //加
+    a_minus = 3,   //减
+    a_times = 4,   //乘
+    a_slash = 5,  //除
+    a_odd = 6,        //奇数
+    a_eql = 8,         //=
+    a_neq = 9,         //<>
+    a_lss = 10,        //<
+    a_geq = 11,          //>=
+    a_gtr = 12,         //>
+    a_leq = 13,         //<=
+};
 #define FCT_COUNT 8
 #define MAX_CODE_SIZE  500  // 指令数组最大长度
 void init_code(const char* original_code);  // 初始化指令数组

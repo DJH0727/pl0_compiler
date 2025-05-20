@@ -5,7 +5,6 @@
 #include <iostream>
 #include <symbol_table.h>
 
-#include "global.h"
 static const char* source = NULL;  // 源代码字符串
 static int pos = 0;         // 当前字符索引
 static int line = 1;        // 当前行号

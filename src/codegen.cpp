@@ -8,8 +8,8 @@
 #include <sstream>
 
 Instruction code[MAX_CODE_SIZE];//p-code
-std::string originalCode[MAX_CODE_SIZE];//原始代码
-std::string labeledCode[MAX_CODE_SIZE];//带标签的代码
+std::string originalCode[2*MAX_CODE_SIZE];//原始代码
+std::string labeledCode[2*MAX_CODE_SIZE];//带标签的代码
 int codeIndex = 0;
 int lineCounter = 1;
 int lastLineCounter = 0;//上一次打印的行号
@@ -23,7 +23,6 @@ void init_code(const char* original_code) {
 
 
     while (std::getline(iss, line)) {
-        if (originalLineCount >= MAX_CODE_SIZE) break;
         originalCode[originalLineCount++] = line;
     }
 }

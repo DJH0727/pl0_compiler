@@ -6,6 +6,8 @@
 #define PARSER_H
 #include <string>
 #include <token.h>
+//保留栈的大小
+#define RESERVE_ADDRESS_SIZE 3 // 保留地址大小为3,SL,DL,RA
 void match(PL0TokenType type);// 匹配token的类型
 
 void insert_label_code();

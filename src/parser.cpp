@@ -63,10 +63,10 @@ void parse_block() {
 
     code[index].a = codeIndex;
     // 回填代码段大小
-    emit(INT_, 0, varCount[currentLevel]+3);
+    emit(INT_, 0, varCount[currentLevel]+RESERVE_ADDRESS_SIZE);
 
     parse_stmt();
-    emit(OPR, 0, 0);// 释放数据段
+    emit(OPR, 0, a_release);// 释放数据段
 
 
 }
@@ -147,7 +147,7 @@ void parse_var_decl() {
     match(varsym); // 消费 'var'
 
     // 变量地址初始值（局部变量在本层的偏移）
-    int address = 3;//0 SL; 1 DL; 2 RA
+    int address = RESERVE_ADDRESS_SIZE;//0 SL; 1 DL; 2 RA
 
     while (true) {
         // 标识符检查
@@ -222,7 +222,7 @@ void parse_proc_decl() {
 
 
         // 回填该过程所需的局部变量空间大小
-        symbol->size = varCount[currentLevel]+3;// 3 是 SL, DL, RA 的大小
+        symbol->size = varCount[currentLevel]+RESERVE_ADDRESS_SIZE;// 3 是 SL, DL, RA 的大小
         currentLevel--;                // 返回上一层
 
         if (currentToken.type != semicolon) {
@@ -373,7 +373,7 @@ void parse_condition() {
         match(  oddsym); // 消费 'odd'
         parse_expression();    // 解析表达式
 
-        emit(OPR, 0, 6);
+        emit(OPR, 0, a_odd);
     } else {
         // Exp RelOp Exp
         parse_expression(); // 左边表达式
@@ -381,12 +381,12 @@ void parse_condition() {
         // 检查关系运算符
         int relOpCode = -1;
         switch (currentToken.type) {
-            case eql:  relOpCode = 8; break; // =
-            case neq:  relOpCode = 9; break; // <>
-            case lss:  relOpCode = 10; break; // <
-            case geq:  relOpCode = 11; break; // >=
-            case gtr:  relOpCode = 12; break; // >
-            case leq:  relOpCode = 13; break; // <=
+            case eql:  relOpCode = a_eql; break; // =
+            case neq:  relOpCode = a_neq; break; // <>
+            case lss:  relOpCode = a_lss; break; // <
+            case geq:  relOpCode = a_geq; break; // >=
+            case gtr:  relOpCode = a_gtr; break; // >
+            case leq:  relOpCode = a_leq; break; // <=
             default:
                 error(ERR_EXPECT_REL_OP, currentToken.line, currentToken.column);
             return;
@@ -413,7 +413,7 @@ void parse_expression() {
 
     // 如果前面是负号，执行取负操作
     if (op == minus) {
-        emit(OPR, 0, 1);
+        emit(OPR, 0, a_neg);
     }
 
     // 后续的 + 或 - 连接的 Term
@@ -424,9 +424,9 @@ void parse_expression() {
         parse_term();
 
         if (op == plus) {
-            emit(OPR, 0, 2);// 加法
+            emit(OPR, 0, a_plus);// 加法
         } else {
-            emit(OPR, 0, 3);
+            emit(OPR, 0, a_minus);
         }
     }
 }
@@ -443,9 +443,9 @@ void parse_term() {
         parse_factor(); // 右边的因子
 
         if (op == times) {
-            emit(OPR, 0, 4);
+            emit(OPR, 0, a_times);
         } else {
-            emit(OPR, 0, 5);
+            emit(OPR, 0, a_slash);
         }
     }
 }

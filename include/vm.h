@@ -4,5 +4,9 @@
 
 #ifndef VM_H
 #define VM_H
+#define STACK_SIZE  1000
 
+
+void execute_program();
+int base(int l, int b, const int stack[]) ;
 #endif //VM_H
