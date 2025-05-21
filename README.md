@@ -229,6 +229,7 @@ void parse_program() {
 
 ## 虚拟机
 虚拟机用于执行P-code。
+
 在语法分析器执行完代码生成后，执行P-code。
 
 ```c++

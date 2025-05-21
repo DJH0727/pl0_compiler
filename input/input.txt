@@ -1,16 +1,55 @@
-var a, b, c, max;
+const m=7, n=85;             // 定义常量 m=7，n=85
+var x,y,z,q,r,l;               // 定义变量 x, y（输入），z（乘积），q（商），r（余数）,l（最大公约数）
 
-procedure findMax;
-begin
-    max := a;
-    if b > max then
-        max := b;
-    if c > max then
-        max := c;
-end;
+procedure multiply;         // 乘法过程：z := x * y，使用移位和加法实现
+    var a,b;
+    begin
+        a:=x; b:=y; z:=0;
+        while b>0 do
+            begin
+                if odd b then z:=z+a;     // 如果 b 是奇数，则将 a 加到 z 上
+                a:=2*a;                   // a 翻倍
+                b:=b/2;                   // b 减半
+            end
+    end;
+
+procedure divide;           // 除法过程：x 除以 y，结果为 q（商），r（余数）
+    var w;
+    begin
+        r:=x; q:=0; w:=y;
+        while w<=r do w:=2*w;            // 将 w 扩展为最接近 r 的 2 的倍数
+        while w>y do
+            begin
+                q:=2*q; w:=w/2;          // 商翻倍，w 缩小一半
+                if w<=r then
+                    begin
+                        r:=r-w;          // 减去 w，更新余数
+                        q:=q+1;          // 商加 1
+                    end
+            end
+    end;
+
+procedure gcd;              // 最大公约数过程：x 与 y 的最大公约数
+    var f,g;
+    begin
+        f:=x;
+        g:=y;
+        while f<>g do
+            begin
+                if f<g then g:=g-f;      // 较大数减较小数
+                if g<f then f:=f-g;
+            end;
+        l:=f;
+    end;
 
 begin
-    read (a, b, c);
-    call findMax;
-    write (max);
+    x:=m; y:=n;
+    call multiply;          // 执行乘法：z := 7 * 85
+    write(z);               // 输出 z=595
+    read(x); read(y);       // 输入 x=25, y=3
+    call divide;           // 执行除法：25 / 3，q=8, r=1
+    write(q,r);            // 输出 q=8, r=1
+    read(x); read(y);       // 输入 x=34, y=36
+    call gcd;             // 执行最大公约数：gcd(34,36)=2
+    write(l);            // 输出 l=2
 end.

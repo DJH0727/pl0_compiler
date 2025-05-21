@@ -1,16 +1,55 @@
-0 var a, b, c, max;
+0 const m=7, n=85;             // 定义常量 m=7，n=85
+1 var x,y,z,q,r,l;               // 定义变量 x, y（输入），z（乘积），q（商），r（余数）,l（最大公约数）
 1 
-1 procedure findMax;
-1 begin
-3     max := a;
-5     if b > max then
-8         max := b;
-11     if c > max then
-14         max := c;
-17 end;
-18 
-18 begin
-19     read (a, b, c);
-25     call findMax;
-26     write (max);
-28 end.
+1 procedure multiply;         // 乘法过程：z := x * y，使用移位和加法实现
+1     var a,b;
+2     begin
+3         a:=x; b:=y; z:=0;
+9         while b>0 do
+12             begin
+13                 if odd b then z:=z+a;     // 如果 b 是奇数，则将 a 加到 z 上
+20                 a:=2*a;                   // a 翻倍
+24                 b:=b/2;                   // b 减半
+28             end
+28     end;
+30 
+30 procedure divide;           // 除法过程：x 除以 y，结果为 q（商），r（余数）
+30     var w;
+31     begin
+32         r:=x; q:=0; w:=y;
+38         while w<=r do w:=2*w;            // 将 w 扩展为最接近 r 的 2 的倍数
+47         while w>y do
+50             begin
+51                 q:=2*q; w:=w/2;          // 商翻倍，w 缩小一半
+59                 if w<=r then
+62                     begin
+63                         r:=r-w;          // 减去 w，更新余数
+67                         q:=q+1;          // 商加 1
+71                     end
+71             end
+71     end;
+73 
+73 procedure gcd;              // 最大公约数过程：x 与 y 的最大公约数
+73     var f,g;
+74     begin
+75         f:=x;
+77         g:=y;
+79         while f<>g do
+82             begin
+83                 if f<g then g:=g-f;      // 较大数减较小数
+91                 if g<f then f:=f-g;
+99             end;
+100         l:=f;
+102     end;
+103 
+103 begin
+104     x:=m; y:=n;
+108     call multiply;          // 执行乘法：z := 7 * 85
+109     write(z);               // 输出 z=595
+111     read(x); read(y);       // 输入 x=25, y=3
+115     call divide;           // 执行除法：25 / 3，q=8, r=1
+116     write(q,r);            // 输出 q=8, r=1
+120     read(x); read(y);       // 输入 x=34, y=36
+124     call gcd;             // 执行最大公约数：gcd(34,36)=2
+125     write(l);            // 输出 l=2
+127 end.

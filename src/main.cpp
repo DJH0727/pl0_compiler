@@ -7,8 +7,6 @@
 #include <parser.h>
 #include <symbol_table.h>
 #include <vm.h>
-//#define DEBUG 1
-#define PRINT2FILE 1
 // 路径
 
 #include "token.h"
@@ -35,23 +33,32 @@ int main() {
     initLexer(code);
     getNextToken();
     init_code(code);
-    parse_program();
+    const std::unique_ptr<ASTNode> root = parse_program();
     execute_program();
-    //print_symbol_table();
-    //printListCode();
-    //print_label_code();
+//#define PRINT2CONSOLE 1
+#ifdef PRINT2CONSOLE
+    print_symbol_table();
+    printListCode();
+    print_label_code();
+    printASTNode(root.get());
+#endif
+
+#define PRINT2FILE 1
 #ifdef PRINT2FILE
     FILE* symbol_table_file = fopen((OUTPUT_PATH+"symbol_table.txt").c_str(),"w");
     FILE* code_file = fopen((OUTPUT_PATH+"code.txt").c_str(),"w");
     FILE* label_file = fopen((OUTPUT_PATH+"label_code.txt").c_str(),"w");
+    FILE* ast_file = fopen((OUTPUT_PATH+"ast.txt").c_str(),"w");
     print_symbol_table_to_file(symbol_table_file);
     print_code_to_file(code_file);
     print_label_code_to_file(label_file);
-    printf("Output files generated in %s.\n%s \n%s \n%s \n",
+    print_ast_to_file(ast_file, root.get());
+    printf("Output files generated in %s.\n%s \n%s \n%s \n%s \n",
         OUTPUT_PATH.c_str(),
         ("symbol_table.txt"),
         ("code.txt"),
-        ("label_code.txt"));
+        ("label_code.txt"),
+        ("ast.txt"));
     fclose(symbol_table_file);
 #endif
 

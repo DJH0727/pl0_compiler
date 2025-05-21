@@ -11,6 +11,7 @@ add_executable(pl0_compiler
         src/vm.cpp
         src/symbol_table.cpp
         src/common.cpp
+        src/ast.cpp
 )
 
 include_directories(include)
