@@ -80,6 +80,5 @@ void printASTNode(const ASTNode* node, const std::string& prefix , bool isLast) 
 }
 void print_ast_to_file(FILE* ast_file, const ASTNode* node) {
     const std::string str = printASTToString(node);
-    fprintf(ast_file, "AST: %s\n", str.c_str());
-    fprintf(ast_file, "%s", str.c_str());
+    fprintf(ast_file, "AST:\n %s\n", str.c_str());
 }
