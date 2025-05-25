@@ -41,6 +41,8 @@ pl0-compiler/
 
 Clion中设置工作目录为该项目根目录。
 
+参考项目 reference-projects/c_base
+
 ## 文法
 ```
 基础文法：
