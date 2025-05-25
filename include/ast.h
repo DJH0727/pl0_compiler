@@ -46,13 +46,10 @@ struct ASTNode {
     ASTNodeType type;
     std::string value;
     std::vector<std::unique_ptr<ASTNode>> children;
-
     explicit ASTNode(const ASTNodeType t, std::string  val = "") : type(t), value(std::move(val)) {}
-
     void addChild(std::unique_ptr<ASTNode> child) {
         if (child) children.push_back(std::move(child));
     }
-    public:
 };
 
 const char* astNodeTypeToString(ASTNodeType type);

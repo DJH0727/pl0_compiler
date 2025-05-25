@@ -28,7 +28,6 @@ void match(const PL0TokenType type) {
 
 std::unique_ptr<ASTNode> parse_program() {
     auto node = std::make_unique<ASTNode>(AST_PROGRAM); // 创建程序节点
-
     std::unique_ptr<ASTNode> blockNode = parse_block(); // 拿到 block 节点的唯一所有权
     node->addChild(std::move(blockNode));
     if (currentToken.type != period) {
@@ -47,8 +46,6 @@ std::unique_ptr<ASTNode> parse_block() {
     varCount[currentLevel] = 0; // 变量计数归零
     const int index = codeIndex; // 记录当前代码段的返回地址
     emit(JMP, 0, 0); // 进入程序，生成入口代码
-
-
     if (currentToken.type == constsym) {
         auto constDecl = parse_const_decl(); // 返回 unique_ptr<ASTNode>
         node->addChild(std::move(constDecl));
@@ -61,15 +58,12 @@ std::unique_ptr<ASTNode> parse_block() {
         auto procDecl = parse_proc_decl();
         node->addChild(std::move(procDecl));
     }
-
     code[index].a = codeIndex;
     // 回填代码段大小
     emit(INT_, 0, varCount[currentLevel]+RESERVE_ADDRESS_SIZE);
-
     auto stmt = parse_stmt(); // 语句部分
     node->addChild(std::move(stmt));
     emit(OPR, 0, a_release);// 释放数据段
-
     return node;
 }
 
@@ -131,7 +125,7 @@ std::unique_ptr<ASTNode> parse_const_decl() {
         }
     }
 
-    // 6. 常量声明必须以分号结束
+    // 常量声明必须以分号结束
     if (currentToken.type != semicolon) {
         error(ERR_EXPECT_SEMICOLON, currentToken.line, currentToken.column);
     }

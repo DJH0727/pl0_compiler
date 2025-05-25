@@ -4,45 +4,48 @@
 #include "codegen.h"
 
 #include <common.h>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-
-Instruction code[MAX_CODE_SIZE];//p-code
-std::string originalCode[2*MAX_CODE_SIZE];//原始代码
-std::string labeledCode[2*MAX_CODE_SIZE];//带标签的代码
+Instruction code[2 * MAX_CODE_SIZE];//p-code
+std::string sourceCode[MAX_CODE_SIZE];//原始代码
 int codeIndex = 0;
 int lineCounter = 1;
 int lastLineCounter = 0;//上一次打印的行号
 int originalLineCount = 0;
+
+int sourceLine2CodeLine[MAX_CODE_SIZE];//源代码行号到p-code行号的映射
 
 void init_code(const char* original_code) {
     //将code转化为字符串数组，根据换行符分割
     const std::string codeStr(original_code);
     std::istringstream iss(codeStr);
     std::string line;
-
-
     while (std::getline(iss, line)) {
-        originalCode[originalLineCount++] = line;
+        sourceCode[originalLineCount++] = line;
     }
 }
 
 void print_label_code() {
     for (int i = 0; i < originalLineCount; i++) {
-        std::cout <<labeledCode[i] << std::endl;
+            std::cout << sourceLine2CodeLine[i] << " " << sourceCode[i] << std::endl;
     }
 }
+
 void print_label_code_to_file(FILE *file) {
     for (int i = 0; i < originalLineCount; i++) {
-        fprintf(file, "%s\n", labeledCode[i].c_str());
+        std::string line ;
+        line = std::to_string(sourceLine2CodeLine[i]) + " " + sourceCode[i];
+        fprintf(file, "%s\n", line.c_str());
     }
 }
 void label_code() {
     for (int i = lastLineCounter; i < lineCounter; i++) {
-        labeledCode[i] = std::to_string(codeIndex) + " " + originalCode[i];
+        sourceLine2CodeLine[i] = codeIndex;
     }
     lastLineCounter = lineCounter;
 }
+
 
 // 添加一条指令
 void emit(const fct f, const int l, const int a) {
@@ -51,7 +54,6 @@ void emit(const fct f, const int l, const int a) {
         return;
     }
     label_code();//给当前行添加标签
-
     code[codeIndex].f = f;
     code[codeIndex].l = l;
     code[codeIndex].a = a;
@@ -86,7 +88,7 @@ void print_code_to_file(FILE *file) {
     }
 
 }
-std::string getFctName(fct f) {
+std::string getFctName(const fct f) {
     switch (f) {
         case LIT: return "lit";
         case OPR: return "opr";
@@ -98,6 +100,8 @@ std::string getFctName(fct f) {
         case JPC: return "jpc";
         case RED: return "red";
         case WRT: return "wrt";
+        case NOP: return "nop";
         default: return "unknown";
     }
 }
+

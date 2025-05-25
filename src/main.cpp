@@ -60,6 +60,9 @@ int main() {
         ("label_code.txt"),
         ("ast.txt"));
     fclose(symbol_table_file);
+    fclose(code_file);
+    fclose(label_file);
+    fclose(ast_file);
 #endif
 
 

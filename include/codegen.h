@@ -18,6 +18,7 @@ enum fct  {
      JPC,  // 条件跳转
      RED, // read
      WRT, // write
+    NOP,//空指令
 };
 std::string getFctName(fct f);  // 指令名称
 struct Instruction {
@@ -49,7 +50,7 @@ void printListCode();                 // 打印所有指令
 void print_code_to_file(FILE *file) ;
 void print_label_code();//打印带标签的原始代码
 void print_label_code_to_file(FILE *file);
-extern Instruction code[MAX_CODE_SIZE];      // 指令数组
+extern Instruction code[2 * MAX_CODE_SIZE];      // 指令数组
 extern int codeIndex;           // 当前指令计数
 extern int lineCounter;         // 当前行号
 #endif //CODEGEN_H

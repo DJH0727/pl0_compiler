@@ -5,6 +5,7 @@
 - [词法分析](#词法分析)
 - [名字表](#名字表)
 - [代码生成](#代码生成)
+- [语法树](#语法树)
 - [语法分析](#语法分析)
 - [虚拟机](#虚拟机)
 
@@ -145,6 +146,81 @@ void emit(fct f, int l, int a);  // 添加一条指令
 ```c++
 // codegen.cpp
 ...
+```
+## 语法树
+语法树是PL0代码的抽象语法表示，用于表示代码的结构。
+
+在语法分析器中，会调用相应的语法分析函数，生成语法树。
+语法树节点定义
+```c++
+struct ASTNode {
+    ASTNodeType type;
+    std::string value;
+    std::vector<std::unique_ptr<ASTNode>> children;
+    explicit ASTNode(const ASTNodeType t, std::string  val = "") : type(t), value(std::move(val)) {}
+    void addChild(std::unique_ptr<ASTNode> child) {
+        if (child) children.push_back(std::move(child));
+    }
+};
+
+```
+语法树示例
+```pl0
+var n, i, result;
+procedure factorial;
+begin
+    result := 1;
+    i := 1;
+    while i <= n do
+    begin
+        result := result * i;
+        i := i + 1;
+    end;
+end;
+begin
+    read (n);
+    call factorial;
+    write (result);
+end.
+```
+```
+AST:
+ └── PROGRAM
+    └── BLOCK
+        ├── VAR_DECL
+        │   ├── IDENTIFIER : n
+        │   ├── IDENTIFIER : i
+        │   └── IDENTIFIER : result
+        ├── PROC_DECLS
+        │   └── PROC_DECL : factorial
+        │       └── BLOCK
+        │           └── BEGIN_STMT
+        │               ├── ASSIGN_STMT : result
+        │               │   └── FACTOR_NUMBER : 1
+        │               ├── ASSIGN_STMT : i
+        │               │   └── FACTOR_NUMBER : 1
+        │               ├── WHILE_STMT
+        │               │   ├── COND_OP : <=
+        │               │   │   ├── FACTOR_IDENTIFIER : i
+        │               │   │   └── FACTOR_IDENTIFIER : n
+        │               │   └── BEGIN_STMT
+        │               │       ├── ASSIGN_STMT : result
+        │               │       │   └── TERM_OP : *
+        │               │       │       ├── FACTOR_IDENTIFIER : result
+        │               │       │       └── FACTOR_IDENTIFIER : i
+        │               │       ├── ASSIGN_STMT : i
+        │               │       │   └── TERM_OP : +
+        │               │       │       ├── FACTOR_IDENTIFIER : i
+        │               │       │       └── FACTOR_NUMBER : 1
+        │               │       └── EMPTY_STMT
+        │               └── EMPTY_STMT
+        └── BEGIN_STMT
+            ├── READ_STMT
+            │   └── FACTOR_IDENTIFIER : n
+            ├── CALL_STMT : factorial
+            ├── WRITE_STMT
+            │   └── FACTOR_IDENTIFIER : result
+            └── EMPTY_STMT
 ```
 ## 语法分析
 语法分析器将词法分析器生成的词法单单元解析
